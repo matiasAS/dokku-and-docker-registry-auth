@@ -34,11 +34,15 @@ jobs:
                 "registry": "registry.gitlab.com",
                 "username": "user",
                 "password": "${{ secrets.GITLAB_PAT }}"
+                "login_to_dokku": true,
+                "login_to_docker": true
               },
               {
                 "registry": "registry2",
                 "username": "user",
                 "password": "${{ secrets.TOKEN }}"
+                "login_to_dokku": true,
+                "login_to_docker": true
               }
             ]
 
