@@ -6,38 +6,39 @@ inputs:
     description: "matrix of registries, pass using toJson(matrix.registrys)"
     required: true
     type: object
-  USER_SSH:
+  user_ssh:
     description: "User to connect to server by ssh. "
     required: true
     type: string
-  IP_SERVER:
+  ip_server:
     description: "IP of server"
     required: true
     type: string
-  PRIVATE_KEY_SERVER_DEPLOY:
+  private_key_server_deploy:
     description: "Private SSH key for server"
     required: true
-
 runs:
   using: "composite"
   steps:
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ inputs.PRIVATE_KEY_SERVER_DEPLOY }}
+        ssh-private-key: ${{ inputs.private_key_server_deploy }}
 
     - name: Add server to known_hosts
       run: |
-        ssh-keyscan ${{ inputs.IP_SERVER }} >> ~/.ssh/known_hosts
+        ssh-keyscan ${{ inputs.ip_server }} >> ~/.ssh/known_hosts
+      shell: bash
 
     - name: Login to Docker registries
       run: |
-        ssh -t ${{ inputs.USER_SSH }}@${{ inputs.IP_SERVER }} <<EOF
+        ssh -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} <<EOF
           set -e
           if [ "${{ inputs.registrys.login_to_dokku }}" = true ]; then
-            dokku registry:login ${{ inputs.registrys.registry}} ${{ inputs.registrys.user}} ${{ inputs.registrys.password }}
+            dokku registry:login ${{ inputs.registrys.registry}} ${{ inputs.registrys.username }} ${{ inputs.registrys.password }}
           fi
           if [ "${{ inputs.registrys.login_to_docker }}" = true ]; then
-            echo ${{ inputs.registrys.password }} | sudo docker login ${{ inputs.registrys.registry}} -u ${{ inputs.registrys.user}} --password-stdin
+            echo ${{ inputs.registrys.password }} | sudo docker login ${{ inputs.registrys.registry}} -u ${{ inputs.registrys.username }} --password-stdin
           fi
         EOF
+      shell: bash
