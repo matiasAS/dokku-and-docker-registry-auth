@@ -5,7 +5,7 @@ inputs:
   registrys:
     description: "Array of registries, pass using toJson(matrix.registrys)"
     required: true
-    type: string  # Cambié esto a 'string' porque JSON es una cadena
+    type: string
   user_ssh:
     description: "User to connect to server by ssh."
     required: true
@@ -32,8 +32,7 @@ runs:
 
     - name: Login to Docker registries
       run: |
-        # Procesar el JSON de 'registrys' usando jq
-        echo '${{ inputs.registrys }}' | jq -c '.[]' | while read i; do
+        echo '${{ inputs.registrys }}' | jq -c '.[]' | while read -r i; do
           REGISTRY=$(echo "$i" | jq -r '.registry')
           USERNAME=$(echo "$i" | jq -r '.username')
           PASSWORD=$(echo "$i" | jq -r '.password')
@@ -42,14 +41,13 @@ runs:
 
           # Ejecutar el login en Dokku si está habilitado
           if [ "$LOGIN_TO_DOKKU" = "true" ]; then
-            ssh -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} <<EOF
-              dokku registry:login $REGISTRY $USERNAME $PASSWORD
-          EOF
+            ssh -o StrictHostKeyChecking=no -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} \
+            "dokku registry:login '$REGISTRY' '$USERNAME' '$PASSWORD'"
           fi
           
           # Ejecutar el login en Docker si está habilitado
           if [ "$LOGIN_TO_DOCKER" = "true" ]; then
-          echo $PASSWORD | sudo docker login $REGISTRY -u $USERNAME --password-stdin
+            echo "$PASSWORD" | sudo docker login "$REGISTRY" -u "$USERNAME" --password-stdin
           fi
-          done
+        done
       shell: bash
