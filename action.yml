@@ -3,7 +3,7 @@ description: "GitHub Action to handle authentication for both Dokku and Docker r
 author: "Matias Alvarez Sabate"
 inputs:
   registrys:
-    description: "Array of registries, pass using toJson(matrix.registrys)"
+    description: "Array of registries"
     required: true
     type: string
   user_ssh:
@@ -41,7 +41,7 @@ runs:
             LOGIN_TO_DOKKU=$(echo "$i" | jq -r '.login_to_dokku // empty')
             LOGIN_TO_DOCKER=$(echo "$i" | jq -r '.login_to_docker // empty')
 
-            if [ -z "$REGISTRY" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+            if [ -z "$REGISTRY" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$LOGIN_TO_DOKKU" ] || [ -z "$LOGIN_TO_DOCKER" ]; then
               echo "Error: Missing required fields in the JSON."
               exit 1
             fi
