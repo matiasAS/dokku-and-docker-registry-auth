@@ -40,7 +40,11 @@ runs:
             PASSWORD=$(echo "$i" | jq -r '.password // empty')
             LOGIN_TO_DOKKU=$(echo "$i" | jq -r '.login_to_dokku // empty')
             LOGIN_TO_DOCKER=$(echo "$i" | jq -r '.login_to_docker // empty')
-
+            echo "REGISTRY: $REGISTRY"
+            echo "USERNAME: $USERNAME"
+            echo "PASSWORD: $PASSWORD"
+            echo "LOGIN_TO_DOKKU: $LOGIN_TO_DOKKU"
+            echo "LOGIN_TO_DOCKER: $LOGIN_TO_DOCKER"
             if [ -z "$REGISTRY" ] || [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$LOGIN_TO_DOKKU" ] || [ -z "$LOGIN_TO_DOCKER" ]; then
               echo "Error: Missing required fields in the JSON."
               exit 1
