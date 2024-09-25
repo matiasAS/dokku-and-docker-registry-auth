@@ -30,24 +30,24 @@ runs:
         ssh-keyscan ${{ inputs.ip_server }} >> ~/.ssh/known_hosts
       shell: bash
 
-    - name: Login to Docker registries
+    - name: Login dokku to registrys
       run: |
-        echo '${{ inputs.registrys }}' | jq -c '.[]' | while read -r i; do
-          REGISTRY=$(echo "$i" | jq -r '.registry')
-          USERNAME=$(echo "$i" | jq -r '.username')
-          PASSWORD=$(echo "$i" | jq -r '.password')
-          LOGIN_TO_DOKKU=$(echo "$i" | jq -r '.login_to_dokku')
-          LOGIN_TO_DOCKER=$(echo "$i" | jq -r '.login_to_docker')
-
-          # Ejecutar el login en Dokku si está habilitado
-          if [ "$LOGIN_TO_DOKKU" = "true" ]; then
-            ssh -o StrictHostKeyChecking=no -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} \
-            "dokku registry:login '$REGISTRY' '$USERNAME' '$PASSWORD'"
-          fi
-          
-          # Ejecutar el login en Docker si está habilitado
-          if [ "$LOGIN_TO_DOCKER" = "true" ]; then
-            echo "$PASSWORD" | sudo docker login "$REGISTRY" -u "$USERNAME" --password-stdin
-          fi
-        done
+        ssh -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} <<EOF
+          set -e
+          for i in '${{ inputs.registrys }}'; do
+            REGISTRY=\$(echo "\$i" | jq -r '.registry')
+            USERNAME=\$(echo "\$i" | jq -r '.username')
+            PASSWORD=\$(echo "\$i" | jq -r '.password')
+            LOGIN_TO_DOKKU=\$(echo "\$i" | jq -r '.login_to_dokku')
+            LOGIN_TO_DOCKER=\$(echo "\$i" | jq -r '.login_to_docker')
+    
+            if [ "\$LOGIN_TO_DOKKU" = "true" ]; then
+              dokku registry:login "\$REGISTRY" "\$USERNAME" "\$PASSWORD"
+            fi
+    
+            if [ "\$LOGIN_TO_DOCKER" = "true" ]; then
+              echo "\$PASSWORD" | sudo docker login "\$REGISTRY" -u "\$USERNAME" --password-stdin
+            fi
+          done
+        EOF
       shell: bash
