@@ -3,11 +3,11 @@ description: "GitHub Action to handle authentication for both Dokku and Docker r
 author: "Matias Alvarez Sabate"
 inputs:
   registrys:
-    description: "matrix of registries, pass using toJson(matrix.registrys)"
+    description: "Array of registries, pass using toJson(matrix.registrys)"
     required: true
-    type: object
+    type: string  # Cambié esto a 'string' porque JSON es una cadena
   user_ssh:
-    description: "User to connect to server by ssh. "
+    description: "User to connect to server by ssh."
     required: true
     type: string
   ip_server:
@@ -32,13 +32,24 @@ runs:
 
     - name: Login to Docker registries
       run: |
-        ssh -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} <<EOF
-          set -e
-          if [ "${{ inputs.registrys.login_to_dokku }}" = true ]; then
-            dokku registry:login ${{ inputs.registrys.registry}} ${{ inputs.registrys.username }} ${{ inputs.registrys.password }}
+        # Procesar el JSON de 'registrys' usando jq
+        echo '${{ inputs.registrys }}' | jq -c '.[]' | while read i; do
+          REGISTRY=$(echo "$i" | jq -r '.registry')
+          USERNAME=$(echo "$i" | jq -r '.username')
+          PASSWORD=$(echo "$i" | jq -r '.password')
+          LOGIN_TO_DOKKU=$(echo "$i" | jq -r '.login_to_dokku')
+          LOGIN_TO_DOCKER=$(echo "$i" | jq -r '.login_to_docker')
+
+          # Ejecutar el login en Dokku si está habilitado
+          if [ "$LOGIN_TO_DOKKU" = "true" ]; then
+            ssh -t ${{ inputs.user_ssh }}@${{ inputs.ip_server }} <<EOF
+              dokku registry:login $REGISTRY $USERNAME $PASSWORD
+          EOF
           fi
-          if [ "${{ inputs.registrys.login_to_docker }}" = true ]; then
-            echo ${{ inputs.registrys.password }} | sudo docker login ${{ inputs.registrys.registry}} -u ${{ inputs.registrys.username }} --password-stdin
+          
+          # Ejecutar el login en Docker si está habilitado
+          if [ "$LOGIN_TO_DOCKER" = "true" ]; then
+          echo $PASSWORD | sudo docker login $REGISTRY -u $USERNAME --password-stdin
           fi
-        EOF
+          done
       shell: bash

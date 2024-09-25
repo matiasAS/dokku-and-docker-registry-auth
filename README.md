@@ -23,19 +23,25 @@ github-actions ALL=(ALL) NOPASSWD: /usr/bin/docker
 ```yaml
 jobs:
   deploy:
-    strategy:
-      matrix:
-        registrys:
-          - registry: "docker.io"
-            user: "myuser"
-            password: "${{ secrets.DOCKER_PASSWORD }}"
-            login_to_docker: true
-            login_to_dokku: false
+    runs-on: self-hosted
     steps:
       - name: Login to Docker and Dokku
-        uses: your-username/dokku-docker-login-action@v1
+        uses: matiasAS/dokku-docker-login-action@v1.0.2
         with:
-          registrys: ${{ toJson(matrix.registrys) }}
+          registrys: |
+            [
+              {
+                "registry": "registry.gitlab.com",
+                "username": "user",
+                "password": "${{ secrets.GITLAB_PAT }}"
+              },
+              {
+                "registry": "registry2",
+                "username": "user",
+                "password": "${{ secrets.TOKEN }}"
+              }
+            ]
+
           USER_SSH: "github-actions"
           IP_SERVER: "192.168.1.100"
           PRIVATE_KEY_SERVER_DEPLOY: ${{ secrets.SSH_PRIVATE_KEY }}
