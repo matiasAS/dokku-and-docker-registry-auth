@@ -13,7 +13,7 @@ github-actions ALL=(ALL) NOPASSWD: /usr/bin/docker
 ```
 ## Inputs
 
-- `registrys`: JSON object passed from the matrix containing Docker and Dokku login information.
+- `registrys`: JSON object passed containing Docker and Dokku login information.
 - `USER_SSH`: The SSH user for connecting to the server.
 - `IP_SERVER`: The IP address of the server.
 - `PRIVATE_KEY_SERVER_DEPLOY`: The private SSH key for server authentication.
