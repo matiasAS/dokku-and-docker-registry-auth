@@ -20,6 +20,13 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Ensure ssh-agent available
+      run: |
+        command -v ssh-agent >/dev/null 2>&1 || {
+          sudo apt-get update && sudo apt-get install -y openssh-client
+        }
+      shell: bash
+
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.9.0
       with:
