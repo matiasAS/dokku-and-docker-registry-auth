@@ -63,7 +63,6 @@ runs:
 
             # Ejecutar el login en Dokku si está habilitado
             if [ "$LOGIN_TO_DOKKU" = "true" ]; then
-              dokku registry:logout "$REGISTRY" "$USERNAME" "$PASSWORD" || true
               dokku registry:login "$REGISTRY" "$USERNAME" "$PASSWORD"
             fi
             
