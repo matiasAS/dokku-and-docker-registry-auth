@@ -68,6 +68,7 @@ runs:
             
             # Ejecutar el login en Docker si está habilitado
             if [ "$LOGIN_TO_DOCKER" = "true" ]; then
+              sudo docker logout "$REGISTRY" || true
               echo "$PASSWORD" | sudo docker login "$REGISTRY" -u "$USERNAME" --password-stdin
             fi
           done
